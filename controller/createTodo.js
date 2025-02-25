@@ -1,45 +1,48 @@
 const Todo = require("../models/todo");
-
 const User = require("../models/user");
-
-// redux ->user
-
-exports.createTodo = async (req, res) => {
+exports.createTask = async (req, res) => {
   try {
-    const { user } = req;
-    if (!user) {
-      return res.status(401).json({
+    const { title, body } = req.body;
+    const userId = req.user.id; // fetch from payload of req.user
+
+    if (!title || !body) {
+      return res.status(400).json({
         success: false,
-        message: "User is required",
+        message: "All fields are required",
       });
     }
-    const { title, body } = req.body;
 
-    const createTodo = new Todo({
+    // Create a new task with the createdBy field
+    const newTask = await Todo.create({
       title,
       body,
+      createdBy: userId, // Add the createdBy field
     });
 
-    const newTodo = await createTodo.save();
-    if (!newTodo) {
-      return res.json({
-        success: false,
-        message: "Internal server error while creating todo",
-      });
-    }
-    user.todos.push(newTodo._id);
-    await user.save();
+    // Update the user model to include the new task ID
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $push: { todos: newTask._id } }, // Push the new task ID into the todos array
+      { new: true }
+    )
+      .populate("todos") // Assuming you want to populate the todos field
+      .exec();
+
+    // Hide the password
+    const userRes = updatedUser.toObject();
+    userRes.password = undefined;
 
     return res.json({
-      user: updateTodo,
+      success: true,
+      message: "Task created successfully",
+      userRes, // Return the updated user
     });
   } catch (err) {
-    console.log(err);
-    console.log("Error while creating todo");
+    console.error(err); // Log the error
+    return res.status(500).json({
+      // Send a response in case of an error
+      success: false,
+      message: "An error occurred while creating the task",
+    });
   }
 };
-
-// models:-
-// user--->name,email,password,todos     task---->userId,title
-// controller-> signup body(fetch) bcyrpt token cookies,body,headers ->token(id)
-// createTodo-> id (token)

@@ -1,9 +1,11 @@
 const express = require("express");
-const { Signup } = require("../controller/auth");
-const { createTodo } = require("../controller/createTodo");
-const { isAuth } = require("../middleware/isAuth");
+const { Signup, Login } = require("../controller/Auth");
+const { createTask } = require("../controller/createTodo");
+const { User, authenticateUser } = require("../middleware/isAuth");
+// const { isAuth } = require("../middleware/isAuth");
 const router = express.Router();
 
 router.post("/signup", Signup);
-router.post("/createTask", isAuth, createTodo);
+router.post("/login", Login);
+router.post("/createTask", authenticateUser, User, createTask);
 module.exports = router;

@@ -1,31 +1,73 @@
-const { decodeToken } = require("../controller/auth");
+// middleware/auth.js
+const jwt = require("jsonwebtoken");
+const User = require("../models/user"); // Adjust the path as necessary
+const { decodeToken } = require("../utility/jwt");
 
-exports.isAuth = async (req, res, next) => {
-  const token = req.headers["authorization"];
-  if (!token) {
-    return res.json({
-      message: "User not authenticatted",
-    });
-  }
-  //   req.user=user
-  const tokenInfo = decodeToken(token);
-  if (!tokenInfo) {
-    return res.json({
-      message: "Invalid token",
-    });
-  }
+exports.authenticateUser = async (req, res, next) => {
+  try {
+    const token = req.headers["authorization"].replace("Bearer ", ""); // Assuming the token is sent in the Authorization header
 
-  //   token ka user db hai ya ni
-  const user = await UserModel.findOne({ email: tokenInfo.email });
-  if (!user) {
-    return res.json({
-      message: "User with email doesn't exists",
+    if (!token || token === undefined) {
+      return res
+        .status(401)
+        .json({ success: false, message: "No token provided" });
+    }
+
+    const tokenInfo = await decodeToken(token, process.env.JWT_SECRET);
+    if (!tokenInfo) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid token",
+      });
+    }
+
+    req.user = tokenInfo;
+    console.log(req.user);
+    // req.user = await User.findById(decoded.id);
+    // Verify the token
+
+    // check user enrty exist in database or not
+    // const user = await User.findById(tokenInfo.id);
+
+    // if (!user) {
+    //   return res
+    //     .status(404)
+    //     .json({ success: false, message: "User  not found" });
+    // }
+
+    next(); // Proceed to the next middleware or route handler
+  } catch (err) {
+    console.error(err);
+    return res.status(401).json({
+      success: false,
+      message: "Something went wrong while veriyfing the token",
     });
   }
-  req.user = user;
-  next();
 };
 
-// middleware add -create-todo
+exports.User = async (req, res, next) => {
+  try {
+    if (req.user.role === "User") {
+      next();
+    }
+    return res.status(403).json({
+      success: false,
+      message: "This route is restricted to User only",
+    });
+  } catch (err) {
+    console.log(err);
+  }
+};
 
-// controller-userid(todo)
+exports.Admin = async (req, res, next) => {
+  try {
+    if (req.user.role === "Admin") {
+      return res.status(401).json({
+        success: false,
+        message: "This route is restricted to Admin Only",
+      });
+    }
+  } catch (err) {
+    console.log(err);
+  }
+};

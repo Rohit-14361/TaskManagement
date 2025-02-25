@@ -12,3 +12,12 @@ exports.createToken = async (payload) => {
     console.log(err);
   }
 };
+
+exports.decodeToken = async (token) => {
+  try {
+    const decode = await jwt.verify(token, process.env.JWT_SECRET);
+    return decode;
+  } catch (err) {
+    console.log(err);
+  }
+};
