@@ -6,7 +6,9 @@ dotenv.config();
 
 exports.createToken = async (payload) => {
   try {
-    const token = await jwt.sign(payload, process.env.JWT_SECRET);
+    const token = await jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
     return token;
   } catch (err) {
     console.log(err);
@@ -15,7 +17,9 @@ exports.createToken = async (payload) => {
 
 exports.decodeToken = async (token) => {
   try {
-    const decode = await jwt.verify(token, process.env.JWT_SECRET);
+    const decode = await jwt.verify(token, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
     return decode;
   } catch (err) {
     console.log(err);

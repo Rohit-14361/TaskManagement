@@ -5,7 +5,7 @@ const { decodeToken } = require("../utility/jwt");
 
 exports.authenticateUser = async (req, res, next) => {
   try {
-    const token = req.headers["authorization"].replace("Bearer ", ""); // Assuming the token is sent in the Authorization header
+    const token = req.headers["authorization"]; // Assuming the token is sent in the Authorization header
 
     if (!token || token === undefined) {
       return res
@@ -49,11 +49,12 @@ exports.User = async (req, res, next) => {
   try {
     if (req.user.role === "User") {
       next();
+    } else {
+      return res.status(403).json({
+        success: false,
+        message: "This route is restricted to User only",
+      });
     }
-    return res.status(403).json({
-      success: false,
-      message: "This route is restricted to User only",
-    });
   } catch (err) {
     console.log(err);
   }
@@ -62,6 +63,8 @@ exports.User = async (req, res, next) => {
 exports.Admin = async (req, res, next) => {
   try {
     if (req.user.role === "Admin") {
+      next();
+    } else {
       return res.status(401).json({
         success: false,
         message: "This route is restricted to Admin Only",

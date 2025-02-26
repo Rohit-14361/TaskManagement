@@ -37,6 +37,8 @@ exports.Signup = async (req, res) => {
       expiresIn: "1h",
     });
 
+    user = user.toObject();
+    user.password = undefined;
     return res.status(201).json({
       success: true,
       message: "User created successfully",
@@ -85,7 +87,7 @@ exports.Login = async (req, res) => {
         role: existUser.role,
       };
       const token = await createToken(payload, process.env.JWT_SECRET);
-      user = user.toObject();
+      // user.toObject();
       user.password = undefined;
       return res.status(200).json({
         success: true,

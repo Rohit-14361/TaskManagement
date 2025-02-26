@@ -1,5 +1,6 @@
 const Todo = require("../models/todo");
 const User = require("../models/user");
+
 exports.createTask = async (req, res) => {
   try {
     const { title, body } = req.body;
@@ -28,14 +29,21 @@ exports.createTask = async (req, res) => {
       .populate("todos") // Assuming you want to populate the todos field
       .exec();
 
-    // Hide the password
-    const userRes = updatedUser.toObject();
-    userRes.password = undefined;
+    // Check if the user was found and updated
+    if (!updatedUser) {
+      return res.status(404).json({
+        success: false,
+        message: "User  not found",
+      });
+    }
 
-    return res.json({
+    // Hide the password
+    let userRes = updatedUser.toObject();
+    userRes.password = undefined;
+    return res.status(201).json({
       success: true,
       message: "Task created successfully",
-      userRes, // Return the updated user
+      userRes,
     });
   } catch (err) {
     console.error(err); // Log the error
