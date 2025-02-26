@@ -33,6 +33,7 @@ exports.updateTask = async (req, res) => {
         { new: true } // Return the updated document
       );
 
+      updatedTask.password = undefined;
       return res.status(200).json({
         success: true,
         message: "Todo updated successfully",

@@ -36,6 +36,8 @@ exports.updateUser = async (req, res) => {
       });
     }
 
+    updateUser.password = undefined;
+
     return res.status(200).json({
       success: true,
       message: "User  updated successfully",

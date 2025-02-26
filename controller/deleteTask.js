@@ -33,7 +33,7 @@ exports.deleteTask = async (req, res) => {
         .populate("todos")
         .exec();
       // updateTask = updaeteTask.toObject();
-      // updateTask.password = undefined;
+      updateTask.password = undefined;
 
       return res.status(200).json({
         success: true,
